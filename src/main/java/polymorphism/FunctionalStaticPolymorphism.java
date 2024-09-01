@@ -2,7 +2,13 @@ package polymorphism;
 
 import exception.ExerciseNotCompletedException;
 import lombok.experimental.UtilityClass;
+import org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
@@ -26,8 +32,8 @@ public class FunctionalStaticPolymorphism {
      *
      * @return map of words and their amount
      */
-    public static Object wordsAmount(String text) {
-        throw new ExerciseNotCompletedException();
+    public static Map<String, Integer> wordsAmount(String text) {
+        return wordsAmount(text, s -> true);
     }
 
     /**
@@ -45,8 +51,12 @@ public class FunctionalStaticPolymorphism {
      * @param maxLength maximum length of word
      * @return map of words and their amount
      */
-    public static Object wordsAmount(Object a, Object b, Object c) {
-        throw new ExerciseNotCompletedException();
+    public static Map<String, Integer> wordsAmount(String text, int b, int c) {
+        return wordsAmount(
+                text,
+                s -> s.length() >= b,
+                s -> s.length() <= c
+        );
     }
 
     /**
@@ -66,8 +76,13 @@ public class FunctionalStaticPolymorphism {
      * @param startWith word should start with this letter
      * @return map of words and their amount
      */
-    public static Object wordsAmount(Object a, Object b, Object c, Object d) {
-        throw new ExerciseNotCompletedException();
+    public static Map<String, Integer> wordsAmount(String text, int b, int c, String d) {
+        return wordsAmount(
+                text,
+                s -> s.length() >= (int) b,
+                s -> s.length() <= (int) c,
+                d != null ? (Predicate<String>) s -> s.startsWith(d.toLowerCase()) : null
+        );
     }
 
     /**
@@ -83,8 +98,21 @@ public class FunctionalStaticPolymorphism {
      * @param predicates predicates to filter words
      * @return map of words and their amount
      */
-    public static Object wordsAmount(Object a, Object... predicates) {
-        throw new ExerciseNotCompletedException();
+    public static Map<String, Integer> wordsAmount(String text, Predicate<String>... predicates) {
+        Predicate<String> stringPredicate = s -> StringUtils.isNotEmpty(s);
+
+        if (Objects.nonNull(predicates)) {
+            for (Predicate<String> predicate : predicates) {
+                if (Objects.nonNull(predicate)) {
+                    stringPredicate = stringPredicate.and(predicate);
+                }
+            }
+        }
+
+        return Arrays.stream(text.split(" "))
+                .map(String::toLowerCase)
+                .filter(stringPredicate)
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.summingInt(s -> 1)));
     }
 
 }
